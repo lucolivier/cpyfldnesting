@@ -1,0 +1,32 @@
+#!/bin/bash
+
+src='/Development/Production/cpyfldnesting/lab/src'
+dest='/Development/Production/cpyfldnesting/lab/dest'
+
+function getDirectoryFolders {
+    #1 path of folder
+    if [ -d "$1" ]; then
+        ls -F "$1" | sed '/\/$/!d' | sed 's/ /<BLK>/g'
+    fi
+}
+
+function processDirectory {
+    #1 path of folder
+    #2 path of subfolder
+    [ "$1" ] || return
+
+    local path=$(echo "$2" | sed 's/\/\/$/\//') #<< secure "is a dir"
+
+    echo "--${1}/$path" 
+       
+    for folder in $(getDirectoryFolders "${1}/$path"); do
+
+        echo "acting on: $folder"
+		mkdir -p "$(echo "$dest/${path}$folder" | sed 's/<BLK>/ /g')"
+		
+		processDirectory "$1" "${path}$folder"
+
+    done    
+}
+
+processDirectory $src
