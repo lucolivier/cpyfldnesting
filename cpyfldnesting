@@ -2,11 +2,12 @@
 
 src='/Development/Production/cpyfldnesting/lab/src'
 dest='/Development/Production/cpyfldnesting/lab/dest'
+deep=0
 
 function getDirectoryFolders {
     #1 path of folder
-    if [ -d "$1" ]; then
-        ls -F "$1" | sed '/\/$/!d' | sed 's/ /<BLK>/g'
+    if [ -d "$(echo $1 | sed 's/<BLK>/ /g')" ]; then
+        ls -F "$(echo $1 | sed 's/<BLK>/ /g')" | sed '/\/$/!d' | sed 's/ /<BLK>/g'
     fi
 }
 
@@ -17,14 +18,16 @@ function processDirectory {
 
     local path=$(echo "$2" | sed 's/\/\/$/\//') #<< secure "is a dir"
 
-    echo "--${1}/$path" 
+    #echo "--${1}/$path" 
        
     for folder in $(getDirectoryFolders "${1}/$path"); do
 
-        echo "acting on: $folder"
+        echo "deep: $deep acting on: $folder"
 		mkdir -p "$(echo "$dest/${path}$folder" | sed 's/<BLK>/ /g')"
 		
+		let deep=deep+1
 		processDirectory "$1" "${path}$folder"
+		let deep=deep-1
 
     done    
 }
